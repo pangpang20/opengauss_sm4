@@ -95,7 +95,7 @@
 
 ### 方式 1: Docker 部署（推荐，已验证架构）
 ```bash
-docker-compose up -d
+docker compose up -d
 ./verify_sm4.sh
 ```
 
@@ -133,7 +133,7 @@ gsql -d postgres -f sm4--1.0.sql
 
 **选项 A: 安装 Docker Desktop（Windows）**
 1. 下载安装：https://www.docker.com/products/docker-desktop/
-2. 重启后运行：`docker-compose up -d`
+2. 重启后运行：`docker compose up -d`
 3. 执行验证
 
 **选项 B: 使用 WSL2 + Docker（推荐）**
@@ -156,7 +156,7 @@ gsql -d postgres -f sm4--1.0.sql
 
 ### 需要环境支持
 4. ⏸️ 安装 Docker - 在 Windows 上安装 Docker Desktop
-5. ⏸️ 构建镜像 - 执行 `docker-compose build`
+5. ⏸️ 构建镜像 - 执行 `docker compose build`
 6. ⏸️ 运行验证 - 执行完整的自动化测试
 7. ⏸️ 性能测试 - 测试加密解密性能
 8. ⏸️ 压力测试 - 并发场景测试

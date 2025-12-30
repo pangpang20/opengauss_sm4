@@ -17,13 +17,13 @@
 
 ```bash
 # 构建并启动OpenGauss容器（包含SM4扩展）
-docker-compose up -d
+docker compose up -d
 
 # 查看容器状态
-docker-compose ps
+docker compose ps
 
 # 查看容器日志
-docker-compose logs -f opengauss-sm4
+docker compose logs -f opengauss-sm4
 ```
 
 ### 2. 等待数据库启动
@@ -35,7 +35,7 @@ docker-compose logs -f opengauss-sm4
 docker ps | grep opengauss-sm4
 
 # 等待数据库完全启动
-docker-compose logs -f opengauss-sm4 | grep "ready to accept connections"
+docker compose logs -f opengauss-sm4 | grep "ready to accept connections"
 ```
 
 ### 3. 运行验证脚本
@@ -147,12 +147,12 @@ gsql -d postgres -U gaussdb -f /opt/test_sm4_gcm.sql
 
 ```bash
 # 查看详细日志
-docker-compose logs opengauss-sm4
+docker compose logs opengauss-sm4
 
 # 重新构建镜像
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
+docker compose down
+docker compose build --no-cache
+docker compose up -d
 ```
 
 ### 问题 2: 编译扩展失败
@@ -241,10 +241,10 @@ gsql -h localhost -U gaussdb -d postgres -f /tmp/backup.sql
 
 ```bash
 # 停止并删除容器（保留数据卷）
-docker-compose down
+docker compose down
 
 # 停止并删除容器和数据卷
-docker-compose down -v
+docker compose down -v
 
 # 删除镜像
 docker rmi sm4_c-opengauss-sm4

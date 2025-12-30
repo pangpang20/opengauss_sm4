@@ -27,7 +27,7 @@ docker-compose --version
 cd c:\data\code\sm4_c
 
 # 启动容器
-docker-compose up -d
+docker compose up -d
 
 # 等待数据库启动（约30秒）
 Start-Sleep -Seconds 30
@@ -86,7 +86,7 @@ sudo usermod -aG docker $USER
 cd /mnt/c/data/code/sm4_c
 
 # 启动容器
-docker-compose up -d
+docker compose up -d
 
 # 运行验证脚本
 chmod +x verify_sm4.sh

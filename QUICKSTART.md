@@ -6,7 +6,7 @@
 
 ```powershell
 # 1. 构建并启动容器
-docker-compose up -d
+docker compose up -d
 
 # 2. 等待30秒让数据库启动
 Start-Sleep -Seconds 30
@@ -29,7 +29,7 @@ gsql -d postgres -U gaussdb -c \"SELECT sm4_c_decrypt_hex(sm4_c_encrypt_hex('Hel
 
 ```bash
 # 1. 构建并启动容器
-docker-compose up -d
+docker compose up -d
 
 # 2. 运行验证脚本
 chmod +x verify_sm4.sh
@@ -75,14 +75,14 @@ SELECT sm4_c_decrypt_hex(
 
 查看容器日志：
 ```bash
-docker-compose logs -f opengauss-sm4
+docker compose logs -f opengauss-sm4
 ```
 
 重新构建：
 ```bash
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
+docker compose down
+docker compose build --no-cache
+docker compose up -d
 ```
 
 ## 详细文档
