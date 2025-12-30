@@ -32,6 +32,11 @@ if ($LASTEXITCODE -eq 0) {
         Write-Host "等待数据库初始化（30秒）..." -ForegroundColor Yellow
         Start-Sleep -Seconds 30
         
+        # 运行时编译（如果构建阶段失败）
+        Write-Host ""
+        Write-Host "检查并编译SM4扩展..." -ForegroundColor Yellow
+        docker exec opengauss-sm4 bash /opt/sm4_extension/build-sm4.sh
+        
         # 创建扩展函数
         Write-Host ""
         Write-Host "创建SM4扩展函数..." -ForegroundColor Yellow
