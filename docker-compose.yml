@@ -6,8 +6,6 @@ services:
     container_name: opengauss_sm4
     hostname: opengauss_sm4
     privileged: true
-    user: root  # 以root身份启动，然后容器内部会切换到omm用户
-    command: ["/docker-entrypoint.sh"]  # 调用我们的启动脚本
     environment:
       - GS_PASSWORD=Enmo@123  # OpenGauss管理员密码
       - GS_NODENAME=opengauss_sm4
@@ -18,7 +16,7 @@ services:
       - ./test_sm4.sql:/opt/test_sm4.sql
       - ./test_sm4_gcm.sql:/opt/test_sm4_gcm.sql
       - ./demo_citizen_data.sql:/opt/demo_citizen_data.sql
-      - opengauss_data:/var/lib/opengauss/data
+      # 不挂载数据目录，让数据库在容器内部初始化
     networks:
       - opengauss_network
     healthcheck:
@@ -28,10 +26,6 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped  # 自动重启
-
-volumes:
-  opengauss_data:
-    driver: local
 
 networks:
   opengauss_network:
