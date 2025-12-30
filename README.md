@@ -6,23 +6,75 @@
 
 ### 🐳 Docker 部署（推荐）
 
-使用 Docker 可以快速体验和测试 SM4 扩展功能：
+#### 1. 一键启动
 
 ```bash
-# 1. 启动 OpenGauss + SM4 扩展
+# 停止并清理旧容器（如果存在）
+docker compose down -v
+
+# 拉取最新代码（可选）
+git pull
+
+# 构建镜像（不使用缓存，确保使用最新代码）
+docker compose build --no-cache
+
+# 启动容器
 docker compose up -d
 
-# 2. 等待30秒让数据库启动完成
-sleep 30
+# 查看容器状态
+docker ps
 
-# 3. 运行验证脚本（Linux/Mac）
-chmod +x verify_sm4.sh
-./verify_sm4.sh
+# 查看启动日志（等待数据库启动完成）
+docker logs -f opengauss_sm4
+# 看到 "server started" 后按 Ctrl+C 退出日志查看
+```
+
+#### 2. 安装 SM4 扩展
+
+```bash
+# 进入容器
+docker exec -it opengauss_sm4 bash
+
+# 在容器内运行安装脚本
+cd /opt/sm4_extension
+./install-sm4.sh
+
+# 创建 SM4 函数
+gsql -d postgres -p 5432 -W Enmo@123 -f /usr/local/opengauss/share/postgresql/extension/sm4--1.0.sql
+
+# 测试 SM4 加密
+gsql -d postgres -p 5432 -W Enmo@123 -c "SELECT sm4_c_encrypt_hex('Hello OpenGauss!', '1234567890abcdef');"
+
+# 退出容器
+exit
+```
+
+#### 3. 常用 Docker 命令
+
+```bash
+# 查看容器日志
+docker logs -f opengauss_sm4
+
+# 进入容器执行命令
+docker exec -it opengauss_sm4 bash
+
+# 连接数据库（从容器外）
+docker exec -it opengauss_sm4 gsql -d postgres -p 5432
+
+# 停止容器
+docker compose stop
+
+# 启动容器
+docker compose start
+
+# 完全清理（删除容器、网络、卷）
+docker compose down -v
 ```
 
 **详细说明**: 
 - [快速开始指南](QUICKSTART.md)
 - [Docker 完整部署文档](DOCKER_DEPLOY.md)
+- [Windows 部署指南](WINDOWS_DEPLOY.md)
 
 ### 📦 传统部署
 
