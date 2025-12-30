@@ -1,7 +1,7 @@
 # Dockerfile for OpenGauss with SM4 Extension
-# 基于OpenGauss官方最新镜像
+# 使用 opengauss-server 镜像（更完整的开发环境）
 
-FROM opengauss/opengauss:5.0.0
+FROM opengauss/opengauss-server:latest
 
 USER root
 
@@ -30,6 +30,11 @@ RUN export OGHOME=/usr/local/opengauss && \
     make clean && \
     make && \
     make install
+
+# 复制测试脚本
+COPY test_sm4.sql /opt/
+COPY test_sm4_gcm.sql /opt/
+COPY demo_citizen_data.sql /opt/
 
 # 切换回omm用户
 USER omm
