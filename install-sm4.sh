@@ -22,9 +22,22 @@ echo ""
 echo "0. 检查编译工具..."
 if ! command -v make &> /dev/null || ! command -v g++ &> /dev/null; then
     echo "   编译工具未安装，正在安装 gcc、g++、make..."
-    yum install -y gcc gcc-c++ make || {
-        echo "   警告: yum 安装失败，尝试继续..."
-    }
+    
+    # 检测包管理器并安装
+    if command -v apt-get &> /dev/null; then
+        # Debian/Ubuntu 系统
+        apt-get update && apt-get install -y gcc g++ make || {
+            echo "   警告: apt-get 安装失败，尝试继续..."
+        }
+    elif command -v yum &> /dev/null; then
+        # RedHat/CentOS 系统
+        yum install -y gcc gcc-c++ make || {
+            echo "   警告: yum 安装失败，尝试继续..."
+        }
+    else
+        echo "   错误: 未找到包管理器（apt-get 或 yum）"
+        exit 1
+    fi
 else
     echo "   ✓ 编译工具已安装"
 fi

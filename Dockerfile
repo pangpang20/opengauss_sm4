@@ -5,8 +5,12 @@ FROM enmotech/opengauss:latest
 
 USER root
 
-# 安装编译工具
-RUN yum install -y gcc gcc-c++ make || echo "Build tools installation failed"
+# 安装编译工具（根据镜像的包管理器选择）
+RUN if command -v apt-get &> /dev/null; then \
+        apt-get update && apt-get install -y gcc g++ make || echo "Build tools installation failed"; \
+    elif command -v yum &> /dev/null; then \
+        yum install -y gcc gcc-c++ make || echo "Build tools installation failed"; \
+    fi
 
 # 创建必要的目录
 RUN mkdir -p /opt/sm4_extension
