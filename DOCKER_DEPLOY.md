@@ -133,11 +133,11 @@ gsql -d postgres -U gaussdb -f /opt/test_sm4_gcm.sql
 
 ### 环境变量
 
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| GS_PASSWORD | 管理员密码 | Enmo@123 |
-| GS_NODENAME | 节点名称 | opengauss-sm4 |
-| GS_USERNAME | 数据库用户 | gaussdb |
+| 变量名      | 说明       | 默认值        |
+| ----------- | ---------- | ------------- |
+| GS_PASSWORD | 管理员密码 | Enmo@123      |
+| GS_NODENAME | 节点名称   | opengauss-sm4 |
+| GS_USERNAME | 数据库用户 | gaussdb       |
 
 ## 故障排除
 
