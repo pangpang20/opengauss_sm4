@@ -42,14 +42,7 @@ COPY test_sm4.sql /opt/
 COPY test_sm4_gcm.sql /opt/
 COPY demo_citizen_data.sql /opt/
 
-# 创建初始化脚本（将被docker-compose调用）
-COPY entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
-# 保持root用户（docker-compose会以root启动）
-# USER omm
-
 # 暴露数据库端口
 EXPOSE 5432
 
-# 不设置ENTRYPOINT，让docker-compose通过command调用我们的脚本
+# 使用镜像默认的ENTRYPOINT和CMD
