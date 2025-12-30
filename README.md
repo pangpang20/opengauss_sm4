@@ -10,7 +10,7 @@
 
 ```bash
 # 1. 启动 OpenGauss + SM4 扩展
-docker-compose up -d
+docker compose up -d
 
 # 2. 等待30秒让数据库启动完成
 sleep 30
