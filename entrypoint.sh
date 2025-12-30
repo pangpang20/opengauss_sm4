@@ -3,39 +3,74 @@
 
 set -e
 
-# 设置环境变量
-export OGHOME=/usr/local/opengauss
-export PATH=$OGHOME/bin:$PATH
-export LD_LIBRARY_PATH=$OGHOME/lib:$LD_LIBRARY_PATH
+echo "======================================"
+echo "OpenGauss SM4 Extension Startup"
+echo "======================================"
 
-# 编译 SM4 扩展（如果还没编译）
-if [ ! -f "$OGHOME/lib/postgresql/sm4.so" ]; then
-    echo "======================================"
-    echo "编译 SM4 扩展..."
-    echo "======================================"
+# 设置环境变量
+export GAUSSHOME=/usr/local/opengauss
+export PATH=$GAUSSHOME/bin:$PATH
+export LD_LIBRARY_PATH=$GAUSSHOME/lib:$LD_LIBRARY_PATH
+
+# 获取配置
+GS_PASSWORD=${GS_PASSWORD:-Enmo@123}
+GS_NODENAME=${GS_NODENAME:-opengauss_sm4}
+DATA_DIR=/var/lib/opengauss/data
+
+echo "节点名称: $GS_NODENAME"
+echo "数据目录: $DATA_DIR"
+
+# 确保数据目录存在并设置权限
+mkdir -p $DATA_DIR
+chown -R omm:omm /var/lib/opengauss
+
+# 检查数据库是否已初始化
+if [ ! -f "$DATA_DIR/postgresql.conf" ]; then
+    echo ""
+    echo "====================================="
+    echo "正在初始化数据库..."
+    echo "====================================="
     
-    cd /opt/sm4_extension
+    # 以 omm 用户身份初始化数据库
+    su - omm << EOF
+export GAUSSHOME=/usr/local/opengauss
+export PATH=\$GAUSSHOME/bin:\$PATH
+export LD_LIBRARY_PATH=\$GAUSSHOME/lib:\$LD_LIBRARY_PATH
+
+gs_initdb -D $DATA_DIR --nodename=$GS_NODENAME -w $GS_PASSWORD
+EOF
+
+    echo ""
+    echo "数据库初始化完成!"
     
-    # 以 root 身份编译
-    if [ "$(id -u)" != "0" ]; then
-        echo "需要 root 权限编译扩展"
-        exit 1
-    fi
+    # 配置允许远程连接
+    echo ""
+    echo "配置远程连接..."
+    su - omm << EOF
+export GAUSSHOME=/usr/local/opengauss
+export PATH=\$GAUSSHOME/bin:\$PATH
+export LD_LIBRARY_PATH=\$GAUSSHOME/lib:\$LD_LIBRARY_PATH
+
+gs_guc set -D $DATA_DIR -c "listen_addresses='*'"
+gs_guc set -D $DATA_DIR -h "host all all 0.0.0.0/0 md5"
+EOF
     
-    make clean || true
-    make || {
-        echo "编译失败，尝试使用简化的头文件包含路径..."
-        # 如果失败，尝试修改 Makefile
-        exit 1
-    }
-    make install
-    
-    echo "======================================"
-    echo "SM4 扩展编译完成！"
-    echo "======================================"
+    echo "配置完成!"
 else
-    echo "SM4 扩展已存在，跳过编译"
+    echo ""
+    echo "数据库已存在，跳过初始化"
 fi
 
-# 切换到 omm 用户并启动数据库
-su - omm -c "gaussdb -D /var/lib/opengauss/data"
+# 启动数据库
+echo ""
+echo "====================================="
+echo "启动OpenGauss数据库..."
+echo "====================================="
+
+exec su - omm << EOF
+export GAUSSHOME=/usr/local/opengauss
+export PATH=\$GAUSSHOME/bin:\$PATH
+export LD_LIBRARY_PATH=\$GAUSSHOME/lib:\$LD_LIBRARY_PATH
+
+gaussdb -D $DATA_DIR
+EOF
