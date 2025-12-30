@@ -9,7 +9,7 @@ Write-Host ""
 # 停止并删除旧容器
 Write-Host "清理旧容器和镜像..." -ForegroundColor Yellow
 docker compose down -v 2>$null
-docker rmi sm4_c-opengauss-sm4 2>$null
+docker rmi sm4_c-opengauss_sm4 2>$null
 
 # 构建新镜像
 Write-Host ""
@@ -35,17 +35,17 @@ if ($LASTEXITCODE -eq 0) {
         # 运行时编译（如果构建阶段失败）
         Write-Host ""
         Write-Host "检查并编译SM4扩展..." -ForegroundColor Yellow
-        docker exec opengauss-sm4 bash /opt/sm4_extension/build-sm4.sh
+        docker exec opengauss_sm4 bash /opt/sm4_extension/build-sm4.sh
         
         # 创建扩展函数
         Write-Host ""
         Write-Host "创建SM4扩展函数..." -ForegroundColor Yellow
-        docker exec opengauss-sm4 bash -c "export PGPASSWORD=Enmo@123; gsql -d postgres -U gaussdb -f /usr/local/opengauss/share/postgresql/extension/sm4--1.0.sql"
+        docker exec opengauss_sm4 bash -c "export PGPASSWORD=Enmo@123; gsql -d postgres -U gaussdb -f /usr/local/opengauss/share/postgresql/extension/sm4--1.0.sql"
         
         # 测试
         Write-Host ""
         Write-Host "测试SM4功能..." -ForegroundColor Yellow
-        docker exec opengauss-sm4 bash -c "export PGPASSWORD=Enmo@123; gsql -d postgres -U gaussdb -c 'SELECT sm4_c_encrypt_hex(''Hello OpenGauss!'', ''1234567890abcdef'');'"
+        docker exec opengauss_sm4 bash -c "export PGPASSWORD=Enmo@123; gsql -d postgres -U gaussdb -c 'SELECT sm4_c_encrypt_hex(''Hello OpenGauss!'', ''1234567890abcdef'');'"
         
         Write-Host ""
         Write-Host "========================================" -ForegroundColor Green
