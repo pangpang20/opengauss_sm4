@@ -1,0 +1,23 @@
+# Git
+.git
+.gitignore
+
+# 编译产物
+*.o
+*.so
+
+# 文档和测试（已在 docker-compose.yml 中单独挂载）
+README.md
+DOCKER_DEPLOY.md
+*.md
+image*.png
+
+# Windows 文件
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo

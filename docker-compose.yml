@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  opengauss-sm4:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: opengauss-sm4
+    hostname: opengauss-sm4
+    privileged: true
+    environment:
+      - GS_PASSWORD=Enmo@123  # OpenGauss管理员密码
+      - GS_NODENAME=opengauss-sm4
+      - GS_USERNAME=gaussdb
+    ports:
+      - "15432:5432"  # 映射到主机15432端口，避免与本地PostgreSQL冲突
+    volumes:
+      - ./test_sm4.sql:/opt/test_sm4.sql
+      - ./test_sm4_gcm.sql:/opt/test_sm4_gcm.sql
+      - ./demo_citizen_data.sql:/opt/demo_citizen_data.sql
+      - opengauss_data:/var/lib/opengauss/data
+    networks:
+      - opengauss-network
+    healthcheck:
+      test: ["CMD-SHELL", "gsql -d postgres -U gaussdb -c 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  opengauss_data:
+    driver: local
+
+networks:
+  opengauss-network:
+    driver: bridge
