@@ -6,6 +6,7 @@ services:
     container_name: opengauss-sm4
     hostname: opengauss-sm4
     privileged: true
+    user: root  # 以root身份启动，然后容器内部会切换到omm用户
     environment:
       - GS_PASSWORD=Enmo@123  # OpenGauss管理员密码
       - GS_NODENAME=opengauss-sm4
@@ -20,11 +21,12 @@ services:
     networks:
       - opengauss-network
     healthcheck:
-      test: ["CMD-SHELL", "gsql -d postgres -U gaussdb -c 'SELECT 1'"]
+      test: ["CMD-SHELL", "gsql -d postgres -U gaussdb -c 'SELECT 1' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
+    restart: unless-stopped  # 自动重启
 
 volumes:
   opengauss_data:
