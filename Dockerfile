@@ -42,7 +42,14 @@ COPY test_sm4.sql /opt/
 COPY test_sm4_gcm.sql /opt/
 COPY demo_citizen_data.sql /opt/
 
+# 复制初始化脚本
+COPY init-and-start.sh /usr/local/bin/
+COPY docker-entrypoint-wrapper.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/init-and-start.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint-wrapper.sh
+
 # 暴露数据库端口
 EXPOSE 5432
 
-# 使用镜像默认的ENTRYPOINT和CMD
+# 使用我们的包装脚本作为入口点
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint-wrapper.sh"]
