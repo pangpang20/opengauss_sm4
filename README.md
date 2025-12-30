@@ -74,7 +74,6 @@ docker compose down -v
 **详细说明**: 
 - [快速开始指南](QUICKSTART.md)
 - [Docker 完整部署文档](DOCKER_DEPLOY.md)
-- [Windows 部署指南](WINDOWS_DEPLOY.md)
 
 ### 📦 传统部署
 
