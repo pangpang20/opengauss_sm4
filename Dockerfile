@@ -1,7 +1,7 @@
 # Dockerfile for OpenGauss with SM4 Extension
-# 使用 opengauss-server 镜像（更完整的开发环境）
+# 使用 enmotech/opengauss 镜像（带自动初始化功能）
 
-FROM opengauss/opengauss-server:latest
+FROM enmotech/opengauss:latest
 
 USER root
 
