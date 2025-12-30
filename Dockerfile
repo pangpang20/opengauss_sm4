@@ -46,13 +46,30 @@ COPY demo_citizen_data.sql /opt/
 RUN echo '#!/bin/bash' > /docker-entrypoint.sh && \
     echo 'set -e' >> /docker-entrypoint.sh && \
     echo '' >> /docker-entrypoint.sh && \
-    echo '# 修复数据目录权限' >> /docker-entrypoint.sh && \
-    echo 'if [ -d /var/lib/opengauss/data ]; then' >> /docker-entrypoint.sh && \
-    echo '    chown -R omm:omm /var/lib/opengauss/data || true' >> /docker-entrypoint.sh && \
-    echo '    chmod 700 /var/lib/opengauss/data || true' >> /docker-entrypoint.sh && \
+    echo '# 设置环境变量' >> /docker-entrypoint.sh && \
+    echo 'export GAUSSHOME=/usr/local/opengauss' >> /docker-entrypoint.sh && \
+    echo 'export PATH=$GAUSSHOME/bin:$PATH' >> /docker-entrypoint.sh && \
+    echo 'export LD_LIBRARY_PATH=$GAUSSHOME/lib:$LD_LIBRARY_PATH' >> /docker-entrypoint.sh && \
+    echo '' >> /docker-entrypoint.sh && \
+    echo '# 确保数据目录存在' >> /docker-entrypoint.sh && \
+    echo 'mkdir -p /var/lib/opengauss/data' >> /docker-entrypoint.sh && \
+    echo 'chown -R omm:omm /var/lib/opengauss' >> /docker-entrypoint.sh && \
+    echo '' >> /docker-entrypoint.sh && \
+    echo '# 检查数据库是否已初始化' >> /docker-entrypoint.sh && \
+    echo 'if [ ! -f /var/lib/opengauss/data/postgresql.conf ]; then' >> /docker-entrypoint.sh && \
+    echo '    echo "正在初始化数据库..."' >> /docker-entrypoint.sh && \
+    echo '    su - omm -c "gs_initdb -D /var/lib/opengauss/data --nodename=${GS_NODENAME:-opengauss_sm4} -w ${GS_PASSWORD:-Enmo@123}"' >> /docker-entrypoint.sh && \
+    echo '    echo "数据库初始化完成"' >> /docker-entrypoint.sh && \
+    echo 'else' >> /docker-entrypoint.sh && \
+    echo '    echo "数据库已存在，跳过初始化"' >> /docker-entrypoint.sh && \
     echo 'fi' >> /docker-entrypoint.sh && \
     echo '' >> /docker-entrypoint.sh && \
-    echo '# 切换到omm用户并启动数据库' >> /docker-entrypoint.sh && \
+    echo '# 修改配置以允许远程连接' >> /docker-entrypoint.sh && \
+    echo 'su - omm -c "gs_guc set -D /var/lib/opengauss/data -c \"listen_addresses='*'\""' >> /docker-entrypoint.sh && \
+    echo 'su - omm -c "gs_guc set -D /var/lib/opengauss/data -h \"host all all 0.0.0.0/0 md5\""' >> /docker-entrypoint.sh && \
+    echo '' >> /docker-entrypoint.sh && \
+    echo '# 启动数据库' >> /docker-entrypoint.sh && \
+    echo 'echo "启动OpenGauss数据库..."' >> /docker-entrypoint.sh && \
     echo 'exec su - omm -c "gaussdb -D /var/lib/opengauss/data"' >> /docker-entrypoint.sh && \
     chmod +x /docker-entrypoint.sh
 
