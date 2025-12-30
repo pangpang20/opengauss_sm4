@@ -7,8 +7,7 @@ services:
     hostname: opengauss_sm4
     privileged: true
     environment:
-      - GS_PASSWORD=Enmo@123  # OpenGauss管理员密码
-      - GS_NODENAME=opengauss_sm4
+      - GS_PASSWORD=Enmo@123
       - GS_USERNAME=gaussdb
     ports:
       - "15432:5432"  # 映射到主机15432端口，避免与本地PostgreSQL冲突
@@ -20,11 +19,11 @@ services:
     networks:
       - opengauss_network
     healthcheck:
-      test: ["CMD-SHELL", "gsql -d postgres -U gaussdb -c 'SELECT 1' || exit 1"]
+      test: ["CMD-SHELL", "gsql -d postgres -p 5432 -c 'SELECT 1' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 40s
     restart: unless-stopped  # 自动重启
 
 networks:
