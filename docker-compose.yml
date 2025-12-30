@@ -7,6 +7,7 @@ services:
     hostname: opengauss_sm4
     privileged: true
     user: root  # 以root身份启动，然后容器内部会切换到omm用户
+    command: ["/docker-entrypoint.sh"]  # 调用我们的启动脚本
     environment:
       - GS_PASSWORD=Enmo@123  # OpenGauss管理员密码
       - GS_NODENAME=opengauss_sm4
