@@ -218,16 +218,14 @@ int sm4_ecb_encrypt(const uint8_t *key, const uint8_t *input, size_t input_len,
     uint8_t *padded;
 
     if (!key || !input || !output || !output_len) {
-        return -1;
+        return SM4_ERROR_INVALID_INPUT;
     }
 
-    /* 计算填充后的长度 */
     padded_len = input_len + SM4_BLOCK_SIZE - (input_len % SM4_BLOCK_SIZE);
     
-    /* 临时缓冲区用于填充 */
     padded = (uint8_t *)malloc(padded_len);
     if (!padded) {
-        return -1;
+        return SM4_ERROR_MEMORY_ALLOCATION;
     }
     
     pkcs7_pad(input, input_len, padded);
@@ -240,10 +238,9 @@ int sm4_ecb_encrypt(const uint8_t *key, const uint8_t *input, size_t input_len,
 
     free(padded);
     *output_len = padded_len;
-    return 0;
+    return SM4_SUCCESS;
 }
 
-/* ECB模式解密 */
 int sm4_ecb_decrypt(const uint8_t *key, const uint8_t *input, size_t input_len,
                     uint8_t *output, size_t *output_len)
 {
@@ -251,26 +248,24 @@ int sm4_ecb_decrypt(const uint8_t *key, const uint8_t *input, size_t input_len,
     size_t i;
 
     if (!key || !input || !output || !output_len) {
-        return -1;
+        return SM4_ERROR_INVALID_INPUT;
     }
 
     if (input_len == 0 || input_len % SM4_BLOCK_SIZE != 0) {
-        return -1;
+        return SM4_ERROR_INVALID_INPUT;
     }
 
     sm4_setkey(&ctx, key);
 
-    /* 分块解密 */
     for (i = 0; i < input_len; i += SM4_BLOCK_SIZE) {
         sm4_decrypt_block(&ctx, input + i, output + i);
     }
 
-    /* 去除填充 */
     if (pkcs7_unpad(output, input_len, output_len) != 0) {
-        return -1;
+        return SM4_ERROR_INVALID_PADDING;
     }
 
-    return 0;
+    return SM4_SUCCESS;
 }
 
 /* CBC模式加密 */
@@ -286,14 +281,14 @@ int sm4_cbc_encrypt(const uint8_t *key, const uint8_t *iv,
     uint8_t *padded;
 
     if (!key || !iv || !input || !output || !output_len) {
-        return -1;
+        return SM4_ERROR_INVALID_INPUT;
     }
 
     padded_len = input_len + SM4_BLOCK_SIZE - (input_len % SM4_BLOCK_SIZE);
     
     padded = (uint8_t *)malloc(padded_len);
     if (!padded) {
-        return -1;
+        return SM4_ERROR_MEMORY_ALLOCATION;
     }
     
     pkcs7_pad(input, input_len, padded);
@@ -312,10 +307,9 @@ int sm4_cbc_encrypt(const uint8_t *key, const uint8_t *iv,
 
     free(padded);
     *output_len = padded_len;
-    return 0;
+    return SM4_SUCCESS;
 }
 
-/* CBC模式解密 */
 int sm4_cbc_decrypt(const uint8_t *key, const uint8_t *iv,
                     const uint8_t *input, size_t input_len,
                     uint8_t *output, size_t *output_len)
@@ -326,32 +320,29 @@ int sm4_cbc_decrypt(const uint8_t *key, const uint8_t *iv,
     uint8_t prev[SM4_BLOCK_SIZE];
 
     if (!key || !iv || !input || !output || !output_len) {
-        return -1;
+        return SM4_ERROR_INVALID_INPUT;
     }
 
     if (input_len == 0 || input_len % SM4_BLOCK_SIZE != 0) {
-        return -1;
+        return SM4_ERROR_INVALID_INPUT;
     }
 
     sm4_setkey(&ctx, key);
     memcpy(prev, iv, SM4_BLOCK_SIZE);
 
-    /* 分块解密 */
     for (i = 0; i < input_len; i += SM4_BLOCK_SIZE) {
         sm4_decrypt_block(&ctx, input + i, block);
-        /* 与前一密文块(或IV)异或 */
         for (j = 0; j < SM4_BLOCK_SIZE; j++) {
             output[i + j] = block[j] ^ prev[j];
         }
         memcpy(prev, input + i, SM4_BLOCK_SIZE);
     }
 
-    /* 去除填充 */
     if (pkcs7_unpad(output, input_len, output_len) != 0) {
-        return -1;
+        return SM4_ERROR_INVALID_PADDING;
     }
 
-    return 0;
+    return SM4_SUCCESS;
 }
 
 /* GF(2^128)中的乘法运算 (用于GHASH) */
@@ -461,7 +452,6 @@ static void gctr(const sm4_context *ctx, const uint8_t *icb,
     }
 }
 
-/* SM4 GCM模式加密 */
 int sm4_gcm_encrypt(const uint8_t *key, const uint8_t *iv, size_t iv_len,
                     const uint8_t *aad, size_t aad_len,
                     const uint8_t *input, size_t input_len,
@@ -477,7 +467,11 @@ int sm4_gcm_encrypt(const uint8_t *key, const uint8_t *iv, size_t iv_len,
     int i;
 
     if (!key || !iv || !output || !tag) {
-        return -1;
+        return SM4_ERROR_INVALID_INPUT;
+    }
+
+    if (aad_len > SM4_GCM_MAX_AAD_SIZE || input_len > SM4_GCM_MAX_INPUT_SIZE) {
+        return SM4_ERROR_INPUT_TOO_LARGE;
     }
 
     /* 设置密钥 */
@@ -555,10 +549,9 @@ int sm4_gcm_encrypt(const uint8_t *key, const uint8_t *iv, size_t iv_len,
     /* Tag = MSB(GCTR(K, J0, S)) */
     gctr(&ctx, j0, s, 16, tag);
 
-    return 0;
+    return SM4_SUCCESS;
 }
 
-/* SM4 GCM模式解密 */
 int sm4_gcm_decrypt(const uint8_t *key, const uint8_t *iv, size_t iv_len,
                     const uint8_t *aad, size_t aad_len,
                     const uint8_t *input, size_t input_len,
@@ -575,7 +568,11 @@ int sm4_gcm_decrypt(const uint8_t *key, const uint8_t *iv, size_t iv_len,
     int i;
 
     if (!key || !iv || !input || !tag || !output) {
-        return -1;
+        return SM4_ERROR_INVALID_INPUT;
+    }
+
+    if (aad_len > SM4_GCM_MAX_AAD_SIZE || input_len > SM4_GCM_MAX_INPUT_SIZE) {
+        return SM4_ERROR_INPUT_TOO_LARGE;
     }
 
     /* 设置密钥 */
@@ -646,7 +643,7 @@ int sm4_gcm_decrypt(const uint8_t *key, const uint8_t *iv, size_t iv_len,
     /* 验证Tag */
     for (i = 0; i < 16; i++) {
         if (computed_tag[i] != tag[i]) {
-            return -1;  /* 认证失败 */
+            return SM4_ERROR_AUTH_FAILED;
         }
     }
 
@@ -656,5 +653,5 @@ int sm4_gcm_decrypt(const uint8_t *key, const uint8_t *iv, size_t iv_len,
     gcm_inc32(icb);
     gctr(&ctx, icb, input, input_len, output);
 
-    return 0;
+    return SM4_SUCCESS;
 }

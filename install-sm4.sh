@@ -1,82 +1,73 @@
 #!/bin/bash
-# SM4 扩展安装脚本（在 OpenGauss 容器启动后运行）
-
 set -e
 
 echo "======================================"
-echo "安装 SM4 加密扩展到 OpenGauss"
+echo "Installing SM4 encryption extension for OpenGauss"
 echo "======================================"
 
-# 检查是否为 root 用户
 if [ "$(id -u)" != "0" ]; then
     echo ""
-    echo "错误: 此脚本需要 root 权限来安装编译工具"
-    echo "请使用以下命令运行:"
+    echo "Error: This script requires root privileges to install build tools"
+    echo "Please run using:"
     echo "  docker exec -it opengauss_sm4 bash -c 'cd /opt/sm4_extension && bash install-sm4.sh'"
     echo ""
     exit 1
 fi
 
-# 检查并安装编译工具
 echo ""
-echo "0. 检查编译工具..."
+echo "0. Checking build tools..."
 if ! command -v make &> /dev/null || ! command -v g++ &> /dev/null; then
-    echo "   编译工具未安装，正在安装 gcc、g++、make..."
+    echo "   Build tools not installed, installing gcc, g++, make..."
     
-    # 检测包管理器并安装
     if command -v apt-get &> /dev/null; then
-        # Debian/Ubuntu 系统
         apt-get update && apt-get install -y gcc g++ make || {
-            echo "   警告: apt-get 安装失败，尝试继续..."
+            echo "   Warning: apt-get installation failed, attempting to continue..."
         }
     elif command -v yum &> /dev/null; then
-        # RedHat/CentOS 系统
         yum install -y gcc gcc-c++ make || {
-            echo "   警告: yum 安装失败，尝试继续..."
+            echo "   Warning: yum installation failed, attempting to continue..."
         }
     else
-        echo "   错误: 未找到包管理器（apt-get 或 yum）"
+        echo "   Error: Package manager not found (apt-get or yum)"
         exit 1
     fi
 else
-    echo "   ✓ 编译工具已安装"
+    echo "   ✓ Build tools already installed"
 fi
 
-# 设置环境变量
-export OGHOME=/usr/local/opengauss
+OGHOME=${OGHOME:-/usr/local/opengauss}
 export PATH=$OGHOME/bin:$PATH
 export LD_LIBRARY_PATH=$OGHOME/lib:$LD_LIBRARY_PATH
 
-# 进入源码目录
 cd /opt/sm4_extension
 
 echo ""
-echo "1. 清理旧文件..."
+echo "1. Cleaning old files..."
 make clean || true
 
 echo ""
-echo "2. 编译 SM4 扩展..."
+echo "2. Compiling SM4 extension..."
 make
 
 echo ""
-echo "3. 安装 SM4 扩展..."
+echo "3. Installing SM4 extension..."
 make install
 
 echo ""
-echo "4. 验证安装..."
+echo "4. Verifying installation..."
 ls -lh $OGHOME/lib/postgresql/sm4.so
 ls -lh $OGHOME/share/postgresql/extension/sm4*
 
 echo ""
 echo "======================================"
-echo "✓ SM4 扩展安装完成!"
+echo "✓ SM4 extension installation complete!"
 echo "======================================"
 echo ""
-echo "下一步操作:"
+echo "Next steps:"
 echo ""
-echo "5. 创建 SM4 函数:"
-echo "   gsql -d postgres -p 5432 -c \"\\\\i /usr/local/opengauss/share/postgresql/extension/sm4--1.0.sql\""
+echo "5. Create SM4 functions:"
+echo "   gsql -d postgres -p 5432 -c \"\\\\i $OGHOME/share/postgresql/extension/sm4--1.0.sql\""
 echo ""
-echo "6. 测试 SM4 加密:"
+echo "6. Test SM4 encryption:"
 echo "   gsql -d postgres -p 5432 -c \"SELECT sm4_c_encrypt_hex('Hello OpenGauss!', '1234567890abcdef');\""
 echo ""

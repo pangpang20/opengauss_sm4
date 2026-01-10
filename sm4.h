@@ -11,9 +11,26 @@
 
 #define SM4_BLOCK_SIZE  16
 #define SM4_KEY_SIZE    16
+#define SM4_KEY_SIZE_HEX 32
+#define SM4_IV_SIZE     16
+#define SM4_IV_SIZE_HEX 32
 #define SM4_NUM_ROUNDS  32
-#define SM4_GCM_IV_SIZE 12  /* 推荐的GCM IV长度 */
-#define SM4_GCM_TAG_SIZE 16 /* GCM认证标签长度 */
+#define SM4_GCM_IV_SIZE 12
+#define SM4_GCM_TAG_SIZE 16
+#define SM4_GCM_MAX_AAD_SIZE 1024
+#define SM4_GCM_MAX_INPUT_SIZE 1024
+
+typedef enum {
+    SM4_SUCCESS = 0,
+    SM4_ERROR_INVALID_KEY = -1,
+    SM4_ERROR_INVALID_IV = -2,
+    SM4_ERROR_INVALID_INPUT = -3,
+    SM4_ERROR_MEMORY_ALLOCATION = -4,
+    SM4_ERROR_INVALID_PADDING = -5,
+    SM4_ERROR_AUTH_FAILED = -6,
+    SM4_ERROR_BUFFER_TOO_SMALL = -7,
+    SM4_ERROR_INPUT_TOO_LARGE = -8
+} sm4_error_code;
 
 typedef struct {
     uint32_t rk[SM4_NUM_ROUNDS];  /* 轮密钥 */
