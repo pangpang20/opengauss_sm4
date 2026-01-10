@@ -1,4 +1,4 @@
-FROM enmotech/opengauss:latest
+FROM enmotech/opengauss:6.0.3
 
 RUN yum install -y gcc gcc-c++ make libxml2 || apt-get update && apt-get install -y gcc g++ make libxml2
 
